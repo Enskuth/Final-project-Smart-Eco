@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เกี่ยวกับ</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 50px 20px;
+      background: linear-gradient(135deg, #ffe0b2, #ffcc80, #ffb74d); /* พื้นหลังโทนส้ม */
+      color: #4e342e;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    h1, p {
+      animation: fadeInUp 1s ease-out forwards;
+      opacity: 0;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      animation-delay: 0.3s;
+    }
+
+    p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      animation-delay: 0.6s;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+      opacity: 0;
+      animation: fadeIn 1s ease-out 1s forwards;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn:hover {
+      background-color: #f57c00;
+      transform: scale(1.05);
+    }
+
+    .flower {
+      position: fixed;
+      top: -40px;
+      font-size: 24px;
+      animation: fallDown linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes fallDown {
+      0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 0;
+      }
+      20% { opacity: 1; }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="title">🌻 เกี่ยวกับระบบ</h1>
+  <p id="desc">ระบบควบคุมสมาร์ทโฮมนี้ออกแบบมาเพื่อความสะดวกสบายและความปลอดภัยของผู้ใช้งาน</p>
+
+  <div class="btn-container">
+    <a href="index.html" class="btn" id="backBtn">🔙 กลับหน้าหลัก</a>
+    <button class="btn" onclick="toggleLang()">🌐 เปลี่ยนภาษา</button>
+  </div>
+
+  <script>
+    let isThai = true;
+
+    function toggleLang() {
+      isThai = !isThai;
+      document.getElementById("title").innerText = isThai ? "🌻 เกี่ยวกับระบบ" : "🌻 About the System";
+      document.getElementById("desc").innerText = isThai
+        ? "ระบบควบคุมสมาร์ทโฮมนี้ออกแบบมาเพื่อความสะดวกสบายและความปลอดภัยของผู้ใช้งาน"
+        : "This smart home control system is designed for user comfort and safety.";
+      document.getElementById("backBtn").innerText = isThai ? "🔙 กลับหน้าหลัก" : "🔙 Back to Home";
+    }
+
+    function createFlower() {
+      const flower = document.createElement("div");
+      flower.className = "flower";
+      flower.innerText = "🌻";
+      flower.style.left = Math.random() * 100 + "vw";
+      flower.style.fontSize = 20 + Math.random() * 16 + "px";
+      flower.style.animationDuration = 6 + Math.random() * 4 + "s";
+      flower.style.animationDelay = Math.random() * 5 + "s";
+      document.body.appendChild(flower);
+      setTimeout(() => flower.remove(), 12000);
+    }
+
+    for (let i = 0; i < 25; i++) {
+      setTimeout(createFlower, i * 300);
+    }
+  </script>
+
+</body>
+</html>

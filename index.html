@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Eco AI Bin</title>
+  <style>
+    :root {
+      --main-color: #8bc34a;
+      --dark-color: #33691e;
+      --shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #264d00;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: transparent;
+      position: relative;
+      line-height: 1.6;
+      letter-spacing: 0.03em;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(-45deg, #b2dfdb, #a5d6a7, #c8e6c9, #dcedc1);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      z-index: -2;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #snowCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container {
+      padding: 50px 20px;
+      flex: 1;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 3px rgba(255,255,255,0.85);
+      color: #33691e;
+    }
+
+    p {
+      font-size: 1.25rem;
+      line-height: 1.8;
+      margin-bottom: 40px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      color: #3e6620;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+      font-weight: 500;
+    }
+
+    .btn {
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      color: #1b5e20;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: var(--shadow);
+      border: none;
+      border-radius: 30px;
+      padding: 16px 20px;
+      transition: all 0.25s ease;
+      display: block;
+      width: 90%;
+      max-width: 320px;
+      margin: 15px auto;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #dcedc1;
+      color: #33691e;
+      box-shadow: 0 8px 20px rgba(51, 105, 30, 0.35);
+      transform: translateY(-3px);
+    }
+
+    .lang {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+    }
+
+    .lang select {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #2e7d32;
+      letter-spacing: 0.05em;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.6);
+      border-radius: 10px;
+      padding: 7px 12px;
+      border: none;
+      background: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(255, 255, 255, 0.5);
+      padding: 12px 0;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      backdrop-filter: blur(4px);
+    }
+
+    .navbar div {
+      font-weight: 600;
+      font-size: 15px;
+      color: #2c6a1e;
+      cursor: pointer;
+      padding: 8px 12px;
+      transition: all 0.3s ease;
+    }
+
+    .navbar div:hover {
+      color: #558b2f;
+      text-shadow: 0 0 3px #a5d6a7;
+    }
+
+    .navbar .active {
+      font-weight: 700;
+      color: #33691e;
+      text-shadow: 0 0 6px #aed581;
+    }
+
+    .ai-circle {
+      width: 100px;
+      height: 100px;
+      border: 4px dashed #8bc34a;
+      border-radius: 50%;
+      margin: 20px auto;
+      animation: spin 6s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 500px) {
+      h1 { font-size: 1.8rem; }
+      p { font-size: 1rem; }
+      .btn { font-size: 0.95rem; }
+      .navbar div { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="snowCanvas"></canvas>
+
+  <div class="lang">
+    <select onchange="changeLang(this.value)">
+      <option value="th">TH</option>
+      <option value="en">EN</option>
+    </select>
+  </div>
+
+  <div class="container">
+    <h1 id="title">Smart Eco ♻️</h1>
+    <p id="subtitle">
+      คุณกำลังเป็น "ฮีโร่ตัวจริง" ที่ช่วยปกป้องธรรมชาติรอบตัวเรา
+      อย่ามองข้ามพลังในมือคุณ! ขยะแต่ละชิ้นที่ถูกทิ้งถูกที่ ไม่ได้หายไปอย่างไร้ค่า แต่มันคือจุดเริ่มต้นของอนาคตที่ดีกว่า
+    </p>
+
+    <div class="ai-circle"></div>
+
+    <button class="btn" onclick="goTo('control')" id="btnControl">🛠️ เข้าควบคุม</button>
+    <button class="btn" onclick="goTo('ai')" id="btnAI">🤖 ผู้ช่วยอัจฉริยะ</button>
+    <button class="btn" onclick="goTo('stats')" id="btnStats">📊 ดูสถิติ</button>
+    <button class="btn" onclick="goTo('about')" id="btnAbout">ℹ️ เกี่ยวกับ</button>
+  </div>
+
+  <div class="navbar">
+    <div onclick="goTo('index')" class="active">🌿 หน้าหลัก</div>
+    <div onclick="goTo('control')">⚙️ ควบคุม</div>
+    <div onclick="goTo('ai')">🧠 AI</div>
+    <div onclick="goTo('stats')">📈 วิเคราะห์</div>
+  </div>
+
+  <script>
+    const text = {
+      th: {
+        title: "Smart Eco",
+        subtitle: "คุณกำลังเป็น \"ฮีโร่ตัวจริง\" ที่ช่วยปกป้องธรรมชาติรอบตัวเรา อย่ามองข้ามพลังในมือคุณ! ขยะแต่ละชิ้นที่ถูกทิ้งถูกที่ ไม่ได้หายไปอย่างไร้ค่า แต่มันคือจุดเริ่มต้นของอนาคตที่ดีกว่า",
+        btnControl: "🛠️ เข้าควบคุม",
+        btnAI: "🤖 ผู้ช่วยอัจฉริยะ",
+        btnStats: "📊 ดูสถิติ",
+        btnAbout: "ℹ️ เกี่ยวกับ"
+      },
+      en: {
+        title: "Smart Eco",
+        subtitle: "You're a true hero protecting our planet! Don't underestimate the power in your hands. Every piece of trash properly disposed of doesn't vanish without a trace; it's the beginning of a better future.",
+        btnControl: "🛠️ Control",
+        btnAI: "🤖 AI Assistant",
+        btnStats: "📊 Statistics",
+        btnAbout: "ℹ️ About"
+      }
+    };
+
+    function changeLang(lang) {
+      document.getElementById("title").textContent = text[lang].title;
+      document.getElementById("subtitle").textContent = text[lang].subtitle;
+      document.getElementById("btnControl").textContent = text[lang].btnControl;
+      document.getElementById("btnAI").textContent = text[lang].btnAI;
+      document.getElementById("btnStats").textContent = text[lang].btnStats;
+      document.getElementById("btnAbout").textContent = text[lang].btnAbout;
+    }
+
+    function goTo(page) {
+      window.location.href = `${page}.html`;
+    }
+
+    // ตั้งค่าภาษาเริ่มต้น
+    window.addEventListener("DOMContentLoaded", () => {
+      const defaultLang = document.querySelector(".lang select").value;
+      changeLang(defaultLang);
+    });
+  </script>
+
+  <script>
+    const canvas = document.getElementById("snowCanvas");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    let snowflakes = [];
+
+    function createSnowflakes() {
+      for (let i = 0; i < 100; i++) {
+        snowflakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 3 + 1,
+          speed: Math.random() * 1 + 0.5
+        });
+      }
+    }
+
+    function drawSnowflakes() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      for (let flake of snowflakes) {
+        ctx.moveTo(flake.x, flake.y);
+        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      moveSnowflakes();
+    }
+
+    function moveSnowflakes() {
+      for (let flake of snowflakes) {
+        flake.y += flake.speed;
+        if (flake.y > height) {
+          flake.y = 0;
+          flake.x = Math.random() * width;
+        }
+      }
+    }
+
+    function updateSnowfall() {
+      drawSnowflakes();
+      requestAnimationFrame(updateSnowfall);
+    }
+
+    createSnowflakes();
+    updateSnowfall();
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>

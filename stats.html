@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>🌸 สถิติถังขยะอัจฉริยะ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { margin:0; font-family:'Segoe UI', Tahoma; background:linear-gradient(135deg, #ffeef4, #ffc1d3, #ffe6ec); background-size:400% 400%; animation:sakuraBg 20s ease infinite; color:#4a2c2a; text-align:center; padding:40px 20px; overflow:hidden; }
+    @keyframes sakuraBg {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    h1 { font-size:2.2rem; margin-bottom:20px; text-shadow:1px 1px 5px #fff; }
+    .stats-box { margin-top:20px;font-size:1.2rem;color:#5a3c3c;background:rgba(255,255,255,0.6);padding:15px 30px;border-radius:12px;display:inline-block;backdrop-filter:blur(6px);box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    .chart-container { width:90%; max-width:400px; margin:30px auto;background:rgba(255,255,255,0.2);padding:20px;border-radius:20px;backdrop-filter:blur(5px);box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+    .btn-container { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:40px; }
+    .btn { padding:10px 20px; background:rgba(255,255,255,0.6); color:#4a2c2a; border:none; border-radius:25px; font-size:1rem; cursor:pointer; backdrop-filter:blur(6px); box-shadow:0 4px 10px rgba(0,0,0,0.1); transition:0.3s; }
+    .btn:hover { background:#ffffff; transform:scale(1.05); }
+    .flower { position:fixed; top:-50px; font-size:24px; animation:fall linear infinite; opacity:0.8; z-index:0; pointer-events:none; }
+    @keyframes fall { to { transform:translateY(110vh) rotate(360deg); opacity:0; } }
+  </style>
+</head>
+<body>
+
+  <h1 id="title">🌸 สถิติการแยกขยะ</h1>
+  <div class="stats-box">
+    <span id="metalLabel">ขยะโลหะ:</span> <span id="metalCount">0</span> <span id="itemLabel">ชิ้น</span><br>
+    <span id="nonMetalLabel">ขยะอโลหะ:</span> <span id="nonMetalCount">0</span> <span id="itemLabel2">ชิ้น</span>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="trashChart"></canvas>
+  </div>
+
+  <div class="btn-container">
+    <button class="btn" onclick="toggleLang()">🌐 เปลี่ยนภาษา</button>
+    <a href="index.html" class="btn" id="homeBtn">🔙 กลับหน้าหลัก</a>
+  </div>
+
+  <script>
+    const BLYNK_TOKEN = "3CQCye-XOtfCmRWjCGjI9B3Jux14t-zt"; // เปลี่ยนให้ตรงกับ ESP8266
+    const BLYNK_URL = "https://blynk.cloud/external/api";
+
+    let chart, isThai = true;
+    const ctx = document.getElementById('trashChart').getContext('2d');
+
+    function drawChart(metal, nonMetal) {
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: isThai ? ['โลหะ','อโลหะ'] : ['Metal','Non‑Metal'],
+          datasets: [{ data: [metal, nonMetal], backgroundColor: ['#f48fb1','#ce93d8'], borderWidth:1 }]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      });
+    }
+
+    async function fetchStats() {
+      try {
+        const [mR, nR] = await Promise.all([
+          fetch(`${BLYNK_URL}/get?token=${BLYNK_TOKEN}&V2`),
+          fetch(`${BLYNK_URL}/get?token=${BLYNK_TOKEN}&V3`)
+        ]);
+        const m = parseInt(await mR.text()) || 0;
+        const n = parseInt(await nR.text()) || 0;
+        document.getElementById("metalCount").innerText = m;
+        document.getElementById("nonMetalCount").innerText = n;
+        drawChart(m, n);
+      } catch(e){ console.error("Error fetching data", e); }
+    }
+
+    function toggleLang() {
+      isThai = !isThai;
+      document.getElementById("title").innerText = isThai ? "🌸 สถิติการแยกขยะ" : "🌸 Smart Trash Bin Stats";
+      document.getElementById("metalLabel").innerText = isThai ? "ขยะโลหะ:" : "Metal Waste:";
+      document.getElementById("nonMetalLabel").innerText = isThai ? "ขยะอโลหะ:" : "Non‑Metal Waste:";
+      document.getElementById("itemLabel").innerText = isThai ? "ชิ้น" : "items";
+      document.getElementById("itemLabel2").innerText = isThai ? "ชิ้น" : "items";
+      document.getElementById("homeBtn").innerText = isThai ? "🔙 กลับหน้าหลัก" : "🔙 Back to Home";
+      fetchStats();
+    }
+
+    function createFlower() {
+      const f = document.createElement("div");
+      f.className = "flower";
+      f.innerText = "🌸";
+      f.style.left = Math.random()*100+"vw";
+      f.style.fontSize = (16+Math.random()*12)+"px";
+      f.style.animationDuration = (5+Math.random()*5)+"s";
+      f.style.animationDelay = Math.random()*5+"s";
+      document.body.appendChild(f);
+      setTimeout(()=>f.remove(), 12000);
+    }
+    for (let i = 0; i < 30; i++) setTimeout(createFlower, i*500);
+
+    fetchStats();
+    setInterval(fetchStats, 5000);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI องค์กรอัจฉริยะ</title>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 1;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(to bottom, #1b5e20, #4caf50, #c8e6c9);
+      overflow: hidden;
+      animation: fadeIn 1s ease-out;
+    }
+
+    header {
+      background: rgba(56, 142, 60, 0.85);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.7rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .language-toggle {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #a5d6a7;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .chat-container {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      backdrop-filter: blur(3px);
+      z-index: 2;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      margin: 5px 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: #dcedc8;
+      color: #000;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #ffffffcc;
+      color: #000;
+      border: 1px solid #ccc;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background: rgba(241, 248, 233, 0.9);
+      border-top: 1px solid #c5e1a5;
+      z-index: 2;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+
+    .input-area button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      border: none;
+      background: #689f38;
+      color: white;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .back-button {
+      display: block;
+      margin: 10px auto 20px;
+      padding: 8px 16px;
+      background-color: #8bc34a;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 1rem;
+      text-decoration: none;
+      width: fit-content;
+      z-index: 2;
+    }
+
+    /* ใบไม้เขียวตกลงมา */
+    .falling-leaf {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/766/766503.png'); /* ใบไม้สีเขียว */
+      background-size: contain;
+      background-repeat: no-repeat;
+      opacity: 0.8;
+      animation: fall 10s linear infinite;
+      pointer-events: none;
+    }
+
+    .falling-leaf:nth-child(1) { left: 5%; animation-delay: 0s; }
+    .falling-leaf:nth-child(2) { left: 20%; animation-delay: 2s; }
+    .falling-leaf:nth-child(3) { left: 35%; animation-delay: 4s; }
+    .falling-leaf:nth-child(4) { left: 55%; animation-delay: 1s; }
+    .falling-leaf:nth-child(5) { left: 75%; animation-delay: 3s; }
+    .falling-leaf:nth-child(6) { left: 90%; animation-delay: 5s; }
+  </style>
+</head>
+<body>
+
+  <!-- ใบไม้ตก -->
+  <div class="falling-leaf"></div>
+  <div class="falling-leaf"></div>
+  <div class="falling-leaf"></div>
+  <div class="falling-leaf"></div>
+  <div class="falling-leaf"></div>
+  <div class="falling-leaf"></div>
+
+  <header>
+    🌿 ผู้ช่วย AI องค์กร
+    <button class="language-toggle" onclick="toggleLanguage()">EN</button>
+  </header>
+
+  <div class="chat-container" id="chatContainer">
+    <div class="message bot" id="welcomeMsg">
+      สวัสดีค่ะ ดิฉันคือผู้ช่วย AI ประจำองค์กรของคุณ มีอะไรให้สนับสนุนได้บ้างคะ?
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="พิมพ์ข้อความที่นี่..." onkeydown="if(event.key==='Enter') sendMessage()">
+    <button onclick="sendMessage()">ส่ง</button>
+  </div>
+
+  <a href="index.html" class="back-button">🔙 กลับหน้าหลัก</a>
+
+  <script>
+    let currentLang = 'th';
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      document.querySelector('.language-toggle').textContent = currentLang === 'th' ? 'EN' : 'TH';
+
+      document.getElementById('welcomeMsg').textContent = currentLang === 'th'
+        ? 'สวัสดีค่ะ ดิฉันคือผู้ช่วย AI ประจำองค์กรของคุณ มีอะไรให้สนับสนุนได้บ้างคะ?'
+        : 'Hello, I am your organization’s AI assistant. How may I support you today?';
+
+      document.getElementById('userInput').placeholder = currentLang === 'th'
+        ? 'พิมพ์ข้อความที่นี่...'
+        : 'Type your message here...';
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chat = document.getElementById('chatContainer');
+
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = text;
+      chat.appendChild(userMsg);
+
+      const botMsg = document.createElement('div');
+      botMsg.className = 'message bot';
+      botMsg.textContent = getBotResponse(text);
+      chat.appendChild(botMsg);
+
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function getBotResponse(input) {
+      input = input.toLowerCase();
+      const thai = currentLang === 'th';
+
+      if (input.includes("สถานะ") || input.includes("ฝา") || input.includes("status") || input.includes("lid")) {
+        return thai ? "ฝาถังขยะกำลังปิดอยู่ค่ะ 😊" : "The lid is currently closed. 😊";
+      } else if (input.includes("ขยะ") || input.includes("เต็ม") || input.includes("full") || input.includes("trash")) {
+        return thai ? "ขยะยังไม่เต็ม สามารถใช้งานต่อได้ค่ะ" : "The bin is not full and can continue to be used.";
+      } else if (input.includes("รีไซเคิล") || input.includes("recycle")) {
+        return thai ? "ระบบ AI จะช่วยแยกขยะรีไซเคิลโดยอัตโนมัติค่ะ ♻️" : "The AI will automatically sort recyclable waste. ♻️";
+      } else {
+        return thai ? "ขออภัย ดิฉันยังไม่เข้าใจคำนี้ค่ะ กรุณาลองใหม่อีกครั้ง" : "Sorry, I didn’t quite understand. Please try again.";
+      }
+    }
+  </script>
+
+</body>
+</html>

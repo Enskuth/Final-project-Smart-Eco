@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Eco AI Bin - Control</title>
+  <style>
+    :root {
+      --blue1: #d0f0fd;
+      --blue2: #e0f7fa;
+      --text-dark: #01579b;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, var(--blue1), var(--blue2));
+      overflow: hidden;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      position: relative;
+      min-height: 100vh;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    canvas#leafCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 1.1rem;
+    }
+
+    input[type=range] {
+      width: 80%;
+      margin: 20px 0;
+    }
+
+    .status-box {
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+
+    .btn-back {
+      margin-top: 30px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    .btn-back:hover {
+      background: #ffffff;
+      transform: scale(1.05);
+    }
+
+    .btn-back:active {
+      transform: scale(0.95);
+    }
+
+    .lang {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .lang select {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255,255,255,0.8);
+      color: #0277bd;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="leafCanvas"></canvas>
+
+<div class="lang">
+  <select id="langSelect" onchange="changeLang(this.value)">
+    <option value="th">TH</option>
+    <option value="en">EN</option>
+  </select>
+</div>
+
+<h1 id="title">🛠️ ควบคุมถังขยะ</h1>
+
+<label id="labelServo" for="angleSlider">หมุนเซอร์โว (ปรับด้วยตนเอง)</label><br>
+<input type="range" id="angleSlider" min="0" max="180" value="90" oninput="updateAngle(this.value)">
+<div class="status-box"><span id="angleText">มุมปัจจุบัน:</span> <span id="angleVal">90</span>°</div>
+<div class="status-box" id="statusText">สถานะ: กำลังโหลด...</div>
+
+<a href="#" class="btn-back" id="btnBack" onclick="goBack()">🔙 กลับหน้าหลัก</a>
+
+<script>
+  const BLYNK_TOKEN = "3CQCye-XOtfCmRWjCGjI9B3Jux14t-zt"; // Token ตรงกับ ESP8266
+  const BLYNK_URL = "https://blynk.cloud/external/api";
+
+  const langData = {
+    th: {
+      title: "🛠️ ควบคุมถังขยะ",
+      labelServo: "หมุนเซอร์โว (ปรับด้วยตนเอง)",
+      angleText: "มุมปัจจุบัน:",
+      status: "สถานะ",
+      backBtn: "🔙 กลับหน้าหลัก"
+    },
+    en: {
+      title: "🛠️ Bin Control",
+      labelServo: "Rotate Servo (Manual)",
+      angleText: "Current Angle:",
+      status: "Status",
+      backBtn: "🔙 Back to Home"
+    }
+  };
+
+  function changeLang(lang) {
+    localStorage.setItem("language", lang);
+    const data = langData[lang];
+    document.getElementById("title").innerText = data.title;
+    document.getElementById("labelServo").innerText = data.labelServo;
+    document.getElementById("angleText").innerText = data.angleText;
+    document.getElementById("btnBack").innerText = data.backBtn;
+    refreshStatus();
+  }
+
+  function loadLang() {
+    const lang = localStorage.getItem("language") || "th";
+    document.getElementById("langSelect").value = lang;
+    changeLang(lang);
+  }
+
+  function updateAngle(val) {
+    document.getElementById("angleVal").innerText = val;
+    fetch(`${BLYNK_URL}/update?token=${BLYNK_TOKEN}&V1=${val}`);
+  }
+
+  function refreshStatus() {
+    const lang = localStorage.getItem("language") || "th";
+
+    // สถานะระบบ
+    fetch(`${BLYNK_URL}/get?token=${BLYNK_TOKEN}&V0`)
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("statusText").innerText = `${langData[lang].status}: ${data}`;
+      });
+
+    // มุมเซอร์โวล่าสุด
+    fetch(`${BLYNK_URL}/get?token=${BLYNK_TOKEN}&V1`)
+      .then(res => res.text())
+      .then(val => {
+        document.getElementById("angleSlider").value = val;
+        document.getElementById("angleVal").innerText = val;
+      });
+  }
+
+  function goBack() {
+    document.body.style.transition = 'opacity 0.5s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 500);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadLang();
+    refreshStatus();
+    setInterval(refreshStatus, 5000); // รีเฟรชข้อมูลทุก 5 วินาที
+  });
+</script>
+
+<!-- เอฟเฟกต์ใบไม้หมุน -->
+<script>
+  const canvas = document.getElementById("leafCanvas");
+  const ctx = canvas.getContext("2d");
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+  const leaves = [];
+
+  function createLeaves() {
+    for (let i = 0; i < 40; i++) {
+      leaves.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 16 + 8,
+        speed: Math.random() * 1 + 0.5,
+        sway: Math.random() * 1 + 0.5,
+        angle: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function drawLeaves() {
+    ctx.clearRect(0, 0, width, height);
+    for (let l of leaves) {
+      ctx.save();
+      ctx.translate(l.x, l.y);
+      ctx.rotate(l.angle);
+      ctx.fillStyle = "rgba(76, 175, 80, 0.8)";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, l.size, l.size / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function moveLeaves() {
+    for (let l of leaves) {
+      l.y += l.speed;
+      l.x += Math.sin(l.angle) * l.sway;
+      l.angle += 0.01;
+      if (l.y > height) {
+        l.y = -20;
+        l.x = Math.random() * width;
+      }
+    }
+  }
+
+  function animateLeaves() {
+    drawLeaves();
+    moveLeaves();
+    requestAnimationFrame(animateLeaves);
+  }
+
+  createLeaves();
+  animateLeaves();
+
+  window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+</script>
+
+</body>
+</html>
